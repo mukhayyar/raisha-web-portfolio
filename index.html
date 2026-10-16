@@ -17,6 +17,8 @@
     (function () {
       var d = document.documentElement, t = null;
       d.classList.add("js");
+      // Pinned / sticky scenes only where a mouse drives a roomy screen.
+      if (matchMedia("(min-width: 901px) and (min-height: 560px) and (hover: hover) and (pointer: fine)").matches) d.classList.add("desk");
       try { t = localStorage.getItem("theme"); } catch (e) {}
       d.dataset.theme = t || (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
     })();
@@ -29,7 +31,7 @@
   <div class="loader" aria-hidden="true">
     <div class="loader__top">
       <span class="loader__brand">curatedby.rai</span>
-      <span class="loader__words"><span>curating</span><span>scheduling</span><span>designing</span><span>assisting</span><span>ready</span></span>
+      <span class="loader__words"><span data-word>curating</span></span>
     </div>
     <div class="loader__grid">
       <i style="--c:var(--pink)"></i><i style="--c:var(--cobalt)"></i><i style="--c:var(--tangerine)"></i>
@@ -59,7 +61,7 @@
     <button class="nav__burger" type="button" aria-expanded="false" aria-controls="menu" data-menu-toggle><span class="sr-only">Menu</span><i></i><i></i></button>
   </header>
 
-  <div class="menu" id="menu" aria-hidden="true">
+  <div class="menu" id="menu" aria-hidden="true" data-lenis-prevent>
     <div class="menu__bg" aria-hidden="true"><i style="--c:var(--pink)"></i><i style="--c:var(--lime)"></i><i style="--c:var(--lilac)"></i><i style="--c:var(--ink)"></i></div>
     <nav class="menu__links" aria-label="Menu">
       <a href="#services" data-menu-link><small>01</small>Services</a>
@@ -167,7 +169,7 @@
       <header class="services__head" data-bg="page">
         <p class="eyebrow mono">(02) — Services</p>
         <h2 class="display" data-split>Three machines run behind <em>every</em> brand I work with.</h2>
-        <p class="services__note">Each one is drawn as a working instrument. Hover, click, poke — they’re live.</p>
+        <p class="services__note">Each one is drawn as a working instrument. <span class="only-mouse">Hover, click, poke</span><span class="only-touch">Tap and poke</span> — they’re live.</p>
       </header>
 
       <div class="stack" data-bg="color">
@@ -221,13 +223,13 @@
     <!-- ───────────────────────── FORMATS ───────────────────────── -->
     <section class="formats" id="formats" data-bg="inverse">
       <div class="formats__pin">
-        <div class="formats__rail" data-cursor="Drag">
+        <header class="formats__intro">
+          <p class="eyebrow mono">(03) — Formats</p>
+          <h2 class="display display--light" data-split>Things I make, <em>shoot</em> &amp; ship.</h2>
+          <p class="formats__hint mono"><i aria-hidden="true"></i><span class="only-mouse">Scroll or drag</span><span class="only-touch">Swipe sideways</span></p>
+        </header>
+        <div class="formats__rail" data-cursor="Drag" tabindex="0" aria-label="Formats, scroll sideways">
           <div class="formats__track">
-            <header class="formats__intro">
-              <p class="eyebrow mono">(03) — Formats</p>
-              <h2 class="display display--light" data-split>Things I make, <em>shoot</em> &amp; ship.</h2>
-              <p class="formats__hint mono"><i aria-hidden="true"></i>Scroll or drag</p>
-            </header>
             <article class="fcard" style="--c:var(--pink)">
               <div class="fcard__art fcard__art--reel"><div class="phone"><div class="phone__screen"><span class="phone__play"></span><span class="phone__bar"><i></i></span><span class="phone__caption"><i></i><i></i></span></div></div></div>
               <div class="fcard__meta"><span class="mono">01</span><h3>Reels &amp; short video</h3><p>Hook, script, shoot, edit. Ten a month in the package.</p></div>
@@ -261,13 +263,14 @@
     <section class="package" id="package" data-bg="color">
       <div class="package__head">
         <p class="eyebrow mono">(04) — The package</p>
-        <h2 class="display" data-split>One partner. One monthly <em>fee</em>. No full-time hire.</h2>
+        <h2 class="display" data-split><span class="package__line">One partner.</span> <span class="package__line">One monthly <em>fee</em>.</span> <span class="package__line">No full-time hire.</span></h2>
         <p class="package__note">For business owners who need a team but aren’t ready to hire one yet.</p>
       </div>
 
+      <div class="ticket-wrap">
       <div class="ticket" data-tilt>
         <div class="ticket__main">
-          <div class="ticket__row mono"><span>Monthly partner</span><span>No. 001</span></div>
+          <div class="ticket__row mono"><span>Monthly partner</span><span class="ticket__no">No. 001</span></div>
           <p class="ticket__price"><span class="ticket__cur">IDR</span><span data-price="1500000">1.500.000</span><span class="ticket__per">/ month</span></p>
           <ul class="ticket__list">
             <li><b>10</b> video contents</li>
@@ -285,6 +288,7 @@
           <span class="mono ticket__small">SBY · WFH · 2026</span>
         </div>
         <div class="stamp" aria-hidden="true"><span>WFH</span><small>outside Surabaya? still OK</small></div>
+      </div>
       </div>
     </section>
 
@@ -322,7 +326,7 @@
         <div class="curate__panel">
           <p class="mono curate__kicker">Before you go — a tiny test</p>
           <h3 class="curate__title">Curate this <em>feed.</em></h3>
-          <p class="curate__rules">Drag a post onto another to swap them (or click two). A curated grid never puts the same colour side by side.</p>
+          <p class="curate__rules"><span class="only-mouse">Drag a post onto another to swap them (or click two).</span><span class="only-touch">Tap two posts to swap them.</span> A curated grid never puts the same colour side by side.</p>
           <div class="gauge" aria-hidden="true">
             <svg viewBox="0 0 200 116">
               <path class="gauge__track" d="M20 100 A80 80 0 0 1 180 100" pathLength="1" />

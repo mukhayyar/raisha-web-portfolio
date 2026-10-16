@@ -96,35 +96,96 @@ export function mountCatalog(root) {
   }
 
   let idle = 0;
-  const hold = () => {
+  let userPick = -1;
+  let lastType = "mouse";
+  let lastXY = [NaN, NaN];
+  const hold = (ms = 4200) => {
     s.touring = false;
     clearTimeout(idle);
     idle = setTimeout(() => {
+      // A mouse resting on the cabinet keeps its drawer: wait for it to leave before touring.
+      if (lastType === "mouse" && stage.matches(":hover")) return hold(ms);
       s.touring = !still.matches;
       s.tour = 0;
+      userPick = -1;
       loop.kick();
-    }, 4200);
+    }, ms);
   };
+  // Touch: the drawers and the bell are small at phone size, so a tap goes to the nearest one
+  // within a fingertip's reach (about 30 px) when it doesn't land exactly on one.
+  const bell = svg.querySelector('[data-part="bell"]');
+  // Centres at REST: a drawer's panel box in its own (unslid) coordinates mapped through the
+  // drawer group, which sits outside the slide transform; the bell through its parent.
+  const restCentre = (el, frame) => {
+    const b = el.getBBox();
+    const m = frame.getScreenCTM();
+    const p = new DOMPoint(b.x + b.width / 2, b.y + b.height / 2).matrixTransform(m);
+    return [p.x, p.y];
+  };
+  const nearest = (x, y) => {
+    const found = [];
+    const consider = (centre, what) => {
+      const d = Math.hypot(centre[0] - x, centre[1] - y);
+      if (d < 30) found.push({ ...what, d });
+    };
+    if (bell) consider(restCentre(bell, bell.parentNode), { bell: true });
+    drawers.forEach((dr, i) => consider(restCentre(dr.panel, dr.el), { i }));
+    found.sort((a, b) => a.d - b.d);
+    const mine = found.find((f) => f.i === userPick && s.pick === userPick);
+    if (mine && found[0] && mine.d - found[0].d < 4) return mine;
+    return found[0] ?? null;
+  };
+  // Mouse: hover picks a drawer, click files the task (rings the bell).
+  // Touch/pen: a tap opens a drawer (a tap on the drawer you opened closes it); the bell rings when tapped.
+  stage.addEventListener("pointerdown", (e) => (lastType = e.pointerType));
   stage.addEventListener("pointermove", (e) => {
+    if (e.pointerType !== "mouse") return;
+    lastType = "mouse";
+    // Chrome fires a synthetic pointermove when a drawer slides under a still cursor; only real movement counts.
+    if (e.clientX === lastXY[0] && e.clientY === lastXY[1]) return;
+    lastXY = [e.clientX, e.clientY];
     const hit = e.target.closest?.("[data-drawer]");
-    if (hit) {
-      hold();
-      const i = Number(hit.dataset.drawer);
-      if (i !== s.pick) {
-        s.pick = i;
-        loop.kick();
-      }
+    if (!hit) return;
+    hold();
+    const i = Number(hit.dataset.drawer);
+    if (i !== s.pick) {
+      s.pick = i;
+      loop.kick();
     }
   });
-  stage.addEventListener("pointerleave", () => {
+  stage.addEventListener("pointerleave", (e) => {
+    if (e.pointerType !== "mouse") return;
     hold();
     s.pick = -1;
     loop.kick();
   });
   stage.addEventListener("click", (e) => {
-    hold();
-    if (e.target.closest?.('[data-part="dome"], [data-part="plunger"]')) ring();
-    else if (e.target.closest?.("[data-drawer]")) ring();
+    const touch = lastType !== "mouse";
+    let onBell = Boolean(e.target.closest?.('[data-part="bell"]'));
+    const drawerEl = e.target.closest?.("[data-drawer]");
+    let i = drawerEl ? Number(drawerEl.dataset.drawer) : -1;
+    if (touch && !onBell && i < 0) {
+      const near = nearest(e.clientX, e.clientY);
+      if (near?.bell) onBell = true;
+      else if (near) i = near.i;
+    }
+    if (onBell) {
+      hold(touch ? 12000 : 4200);
+      ring();
+      return;
+    }
+    if (!touch) {
+      if (i >= 0) {
+        hold();
+        ring();
+      }
+      return;
+    }
+    // Close only the drawer this visitor opened; a drawer the tour pulled out just becomes theirs.
+    userPick = i >= 0 && userPick === i && s.pick === i ? -1 : i;
+    s.pick = userPick;
+    hold(12000);
+    loop.kick();
   });
   stage.addEventListener("keydown", (e) => {
     const step = { ArrowRight: 1, ArrowDown: 2, ArrowLeft: -1, ArrowUp: -2 }[e.key];

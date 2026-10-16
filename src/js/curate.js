@@ -139,11 +139,13 @@ export function initCurate(root) {
     render(!first);
   }
 
-  // Click two to swap, or drag one onto another.
+  // Tap or click two to swap. A mouse can also drag one onto another; touch never drags,
+  // so a swipe over the grid always scrolls the page.
   let drag = null;
+  let suppressClick = false;
   grid.addEventListener("pointerdown", (e) => {
     const tile = e.target.closest(".post");
-    if (!tile) return;
+    if (!tile || e.pointerType !== "mouse" || e.button !== 0) return;
     drag = { tile, x: e.clientX, y: e.clientY, moved: false, id: e.pointerId };
   });
   window.addEventListener("pointermove", (e) => {
@@ -165,13 +167,15 @@ export function initCurate(root) {
     const { tile, moved } = drag;
     drag = null;
     tile.classList.remove("is-dragging");
-    const target = grid.querySelector(".is-target");
+    const target = e.type === "pointercancel" ? null : grid.querySelector(".is-target");
     tiles().forEach((t) => t.classList.remove("is-target"));
     if (moved) {
       gsap.set(tile, { rotate: 0 });
       if (target) swap(tile, target, true);
       else gsap.to(tile, { x: 0, y: 0, duration: 0.5, ease: "elastic.out(1, 0.5)" });
-      tile.dataset.justDragged = "1";
+      // The click that follows this drag's pointerup is not a selection.
+      suppressClick = true;
+      setTimeout(() => (suppressClick = false), 0);
     }
   };
   window.addEventListener("pointerup", end);
@@ -179,10 +183,7 @@ export function initCurate(root) {
   grid.addEventListener("click", (e) => {
     const tile = e.target.closest(".post");
     if (!tile) return;
-    if (tile.dataset.justDragged) {
-      delete tile.dataset.justDragged;
-      return;
-    }
+    if (suppressClick) return;
     if (!selected) {
       selected = tile;
       tile.classList.add("is-picked");

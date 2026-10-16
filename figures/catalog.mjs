@@ -138,7 +138,8 @@ function bell() {
   out.push(`<g data-part="dome">${S(G.solidOf(dome, F, P), { tone: "hi", crease: "lo" })}</g>`);
   const plunger = `${S(k.cylinder(x, y, 1, z + 2.4 + R - 0.6, 3.4, P, 14), { tone: "mid", crease: "none" })}${S(k.cylinder(x, y, 2.8, z + 2.4 + R + 2.8, 1.8, P, 24, 0.3), { tone: "hi", lit: true })}`;
   out.push(`<g data-part="plunger">${plunger}</g>`);
-  return out.join("");
+  // The whole bell (base, dome, plunger) is one tap target.
+  return `<g data-part="bell">${out.join("")}</g>`;
 }
 
 function stamp() {
@@ -218,6 +219,9 @@ function cavity(i) {
   return k.pathOf([at([d.x0, FACE_Y, d.z0]), at([d.x1, FACE_Y, d.z0]), at([d.x1, FACE_Y, d.z1]), at([d.x0, FACE_Y, d.z1])], true);
 }
 
+// The hint corner speaks to the input in hand: CSS shows one span or the other.
+const touchHint = (html, mouse, touch) => html.replace(`>${mouse}<`, `><span class="only-mouse">${mouse}</span><span class="only-touch">${touch}</span><`);
+
 export function catalogHtml() {
   const tops = [
     { depth: k.depthOf([-36, -36, TOP_Z], P), svg: stamp() },
@@ -239,11 +243,11 @@ export function catalogHtml() {
       `<g data-part="drawers">${DRAWERS.map((d, i) => `<g class="ct-drawer" data-drawer="${i}" clip-path="url(#ct-clip-${i})" style="--c:var(${d.token})"><g data-slide="${i}">${drawer(i)}</g></g>`).join("")}</g>`,
     ],
   });
-  return k.plateHtml({
+  return touchHint(k.plateHtml({
     fig: "Fig 3",
     title: "Card catalog",
     hint: "Hover a drawer · click the bell",
     readout: "6 drawers · 60 cards filed",
     body: `<div class="iso-stage ct-stage" tabindex="0" role="group" aria-label="Card catalog. Arrow keys open each drawer in turn; Enter rings the bell.">${svg}</div>`,
-  });
+  }), "Hover a drawer · click the bell", "Tap a drawer · tap the bell");
 }

@@ -322,6 +322,9 @@ export function penSvg(i) {
 
 export const REST = { gy: CELLS[4][1] - PEN_Y, hx: CELLS[4][0] - PEN_DX[1] };
 
+// The hint corner speaks to the input in hand: CSS shows one span or the other.
+const touchHint = (html, mouse, touch) => html.replace(`>${mouse}<`, `><span class="only-mouse">${mouse}</span><span class="only-touch">${touch}</span><`);
+
 export function plotterHtml() {
   const svg = k.figureSvg({
     width: W,
@@ -347,11 +350,11 @@ export function plotterHtml() {
       inkTray(),
     ],
   });
-  return k.plateHtml({
+  return touchHint(k.plateHtml({
     fig: "Fig 1",
     title: "Feed plotter",
     hint: "Hover a tile to plot it",
     readout: "ready · 0 of 9 posts",
     body: `<div class="iso-stage fp-stage" tabindex="0" role="group" aria-label="Feed plotter. Arrow keys pick a tile, Enter plots it.">${svg}</div>`,
-  });
+  }), "Hover a tile to plot it", "Tap a tile to plot it");
 }

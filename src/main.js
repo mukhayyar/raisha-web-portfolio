@@ -13,6 +13,15 @@ import { mountFigures } from "./js/figures/index.js";
 gsap.registerPlugin(ScrollTrigger, SplitText, Draggable, InertiaPlugin);
 
 const still = matchMedia("(prefers-reduced-motion: reduce)").matches;
+// One definition of "desktop" for every pinned or sticky scene; the same query sets html.desk
+// in index.html before first paint, so CSS and JS always agree.
+const DESK = "(min-width: 901px) and (min-height: 560px) and (hover: hover) and (pointer: fine)";
+const FINE = "(hover: hover) and (pointer: fine)";
+const deskQuery = matchMedia(DESK);
+deskQuery.addEventListener("change", (e) => {
+  document.documentElement.classList.toggle("desk", e.matches);
+  ScrollTrigger.refresh();
+});
 const $ = (sel, root = document) => root.querySelector(sel);
 const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
 
@@ -53,11 +62,15 @@ function initClock() {
 function initNav() {
   const nav = $("[data-nav]");
   let last = 0;
+  let run = 0;
   lenis.on("scroll", ({ scroll }) => {
     nav.classList.toggle("is-scrolled", scroll > 40);
-    const down = scroll > last && scroll > window.innerHeight * 0.6;
-    if (!menu.open) nav.classList.toggle("is-hidden", down);
+    const delta = scroll - last;
     last = scroll;
+    if (!delta || menu.open) return;
+    run = Math.sign(delta) === Math.sign(run) ? run + delta : delta;
+    if (run > 12 && scroll > window.innerHeight * 0.6) nav.classList.add("is-hidden");
+    else if (run < -12 || scroll < 40) nav.classList.remove("is-hidden");
   });
   // Which colour world is under the cursor: ink sections flip it to paper.
   $$("[data-bg]").forEach((section) => {
@@ -77,7 +90,6 @@ function initMenu() {
   const toggle = $("[data-menu-toggle]");
   menu.tl = gsap
     .timeline({ paused: true })
-    .set(el, { visibility: "visible" })
     .to($$(".menu__bg i", el), { scaleX: 1, duration: 0.8, ease: "expo.inOut", stagger: 0.09 })
     .to($$(".menu__links a", el), { opacity: 1, y: 0, duration: 0.7, ease: "expo.out", stagger: 0.05 }, "-=0.35")
     .to($(".menu__foot", el), { opacity: 1, duration: 0.5 }, "-=0.4");
@@ -110,6 +122,7 @@ function closeMenu(after) {
 
 /* ───────── Hero ───────── */
 function heroIntro() {
+  if (still) return gsap.timeline();
   const tl = gsap.timeline({ defaults: { ease: "expo.out" } });
   tl.from("[data-hero-word]:not(.hero__grid)", { yPercent: 115, rotate: 4, duration: 1.4, stagger: 0.09 })
     .from(".hero__grid i", { scale: 0, rotate: -90, duration: 0.8, ease: "back.out(2.2)", stagger: { each: 0.05, from: "random" } }, "-=1.0")
@@ -123,31 +136,66 @@ function heroIntro() {
 
 function initHero() {
   const hero = $(".hero");
-  // Pointer parallax on the stickers' inner art; the sticker itself is draggable.
-  const layers = $$(".sticker").map((s) => ({ el: s.firstElementChild, depth: Number(s.dataset.depth || 1) }));
-  const movers = layers.map(({ el }) => ({ x: gsap.quickTo(el, "x", { duration: 0.9, ease: "power3" }), y: gsap.quickTo(el, "y", { duration: 0.9, ease: "power3" }) }));
-  if (!still) {
-    hero.addEventListener("pointermove", (e) => {
+  const stickers = $$(".sticker");
+  const mm = gsap.matchMedia();
+  // With a mouse: the stickers' art follows the pointer and the stickers can be dragged around.
+  // On touch neither runs, so a swipe that starts on a sticker scrolls the page like anywhere else.
+  mm.add(FINE, () => {
+    const layers = stickers.map((s) => ({ el: s.firstElementChild, depth: Number(s.dataset.depth || 1) }));
+    const movers = layers.map(({ el }) => ({ x: gsap.quickTo(el, "x", { duration: 0.9, ease: "power3" }), y: gsap.quickTo(el, "y", { duration: 0.9, ease: "power3" }) }));
+    const onMove = (e) => {
+      if (still) return;
       const nx = e.clientX / window.innerWidth - 0.5;
       const ny = e.clientY / window.innerHeight - 0.5;
       layers.forEach(({ depth }, i) => {
         movers[i].x(nx * 38 * depth);
         movers[i].y(ny * 30 * depth);
       });
-    });
-  }
-  $$(".sticker").forEach((sticker) => {
-    Draggable.create(sticker, {
-      type: "x,y",
-      bounds: hero,
-      inertia: true,
-      zIndexBoost: false,
-      onPress() {
-        gsap.to(sticker, { scale: 1.08, duration: 0.3, ease: "power3" });
-      },
-      onRelease() {
-        gsap.to(sticker, { scale: 1, duration: 0.6, ease: "elastic.out(1, 0.4)" });
-      },
+    };
+    hero.addEventListener("pointermove", onMove);
+    const navH = () => $("[data-nav]")?.offsetHeight ?? 76;
+    // Stickers stay inside the hero and below the nav. Draggable takes a plain rectangle (not a
+    // function), so it is measured here and re-applied whenever the window changes size.
+    const box = () => ({ top: navH(), left: 0, width: hero.clientWidth, height: hero.clientHeight - navH() });
+    const drags = stickers.map((sticker) =>
+      Draggable.create(sticker, {
+        type: "x,y",
+        bounds: box(),
+        inertia: true,
+        zIndexBoost: false,
+        onPress() {
+          gsap.to(sticker, { scale: 1.08, duration: 0.3, ease: "power3" });
+        },
+        onRelease() {
+          gsap.to(sticker, { scale: 1, duration: 0.6, ease: "elastic.out(1, 0.4)" });
+        },
+      })[0],
+    );
+    // A sticker hidden at this size (display:none) measures as 0×0, so bounds would shove it;
+    // park hidden ones at rest and only clamp the visible ones.
+    const shown = (el) => el.getClientRects().length > 0;
+    const settle = () =>
+      drags.forEach((d) => {
+        if (shown(d.target)) d.applyBounds(box());
+        else gsap.set(d.target, { x: 0, y: 0 });
+      });
+    stickers.forEach((s) => !shown(s) && gsap.set(s, { x: 0, y: 0 }));
+    const onResize = settle;
+    window.addEventListener("resize", onResize);
+    return () => {
+      hero.removeEventListener("pointermove", onMove);
+      window.removeEventListener("resize", onResize);
+      drags.forEach((d) => d.kill());
+      gsap.set(stickers, { x: 0, y: 0 });
+    };
+  });
+  // On touch a tap gives the sticker a little spin instead, ending at its own resting tilt.
+  // The tilt is read once, here, before any tween touches it.
+  stickers.forEach((sticker) => {
+    const rest = Number(gsap.getProperty(sticker, "rotate")) || 0;
+    sticker.addEventListener("click", () => {
+      if (matchMedia(FINE).matches || still) return;
+      gsap.fromTo(sticker, { rotate: rest }, { rotate: rest + 360, duration: 0.9, ease: "back.out(1.6)", overwrite: "auto" });
     });
   });
   // The giant word drifts up and the grid tumbles as you leave the hero.
@@ -194,6 +242,7 @@ function initReveals() {
       linesClass: "split-line-inner",
       autoSplit: true,
       onSplit(self) {
+        if (still) return;
         return gsap.from(self.lines, {
           yPercent: 110,
           rotate: 2,
@@ -217,9 +266,10 @@ function initReveals() {
         scrollTrigger: { trigger: text, start: "top 78%", end: "bottom 45%", scrub: 0.6 },
       });
     } else gsap.set(split.words, { opacity: 1 });
-    gsap.from(".inline-chip", { scale: 0, rotate: -30, ease: "back.out(2)", duration: 0.8, stagger: 0.2, scrollTrigger: { trigger: text, start: "top 70%", once: true } });
+    if (!still) gsap.from(".inline-chip", { scale: 0, rotate: -30, ease: "back.out(2)", duration: 0.8, stagger: 0.2, scrollTrigger: { trigger: text, start: "top 70%", once: true } });
   }
 
+  if (still) return;
   gsap.from(".manifesto__aside", { y: 40, opacity: 0, duration: 1.1, ease: "expo.out", scrollTrigger: { trigger: ".manifesto__aside", start: "top 88%", once: true } });
   gsap.from(".hello", { y: 60, rotate: -8, opacity: 0, duration: 1.2, ease: "expo.out", scrollTrigger: { trigger: ".hello", start: "top 90%", once: true } });
   gsap.from(".services__note", { y: 24, opacity: 0, duration: 1, ease: "expo.out", scrollTrigger: { trigger: ".services__head", start: "top 70%", once: true } });
@@ -228,7 +278,7 @@ function initReveals() {
 /* ───────── Services: plates stack and step back ───────── */
 function initServices() {
   const mm = gsap.matchMedia();
-  mm.add("(min-width: 901px) and (prefers-reduced-motion: no-preference)", () => {
+  mm.add(`${DESK} and (prefers-reduced-motion: no-preference)`, () => {
     const cards = $$(".service");
     cards.forEach((card, i) => {
       const next = cards[i + 1];
@@ -242,6 +292,7 @@ function initServices() {
       });
     });
   });
+  if (still) return;
   $$(".service").forEach((card) => {
     gsap.from(card.querySelectorAll(".service__top, .service__title, .service__stat, .service__copy, .chips li"), {
       y: 30,
@@ -249,6 +300,7 @@ function initServices() {
       duration: 1,
       ease: "expo.out",
       stagger: 0.05,
+      clearProps: "transform",
       scrollTrigger: { trigger: card, start: "top 70%", once: true },
     });
   });
@@ -259,8 +311,10 @@ function initFormats() {
   const mm = gsap.matchMedia();
   const pin = $(".formats__pin");
   const track = $(".formats__track");
-  mm.add("(min-width: 901px)", () => {
-    const distance = () => Math.max(0, track.scrollWidth - window.innerWidth);
+  const rail = $(".formats__rail");
+  mm.add(DESK, () => {
+    rail.tabIndex = -1;
+    const distance = () => Math.max(0, track.scrollWidth - rail.clientWidth);
     const tween = gsap.to(track, {
       x: () => -distance(),
       ease: "none",
@@ -275,7 +329,6 @@ function initFormats() {
     };
     gsap.ticker.add(onTick);
     // Dragging the rail scrolls the page.
-    const rail = $(".formats__rail");
     let drag = null;
     const down = (e) => {
       if (e.pointerType !== "mouse") return;
@@ -290,13 +343,16 @@ function initFormats() {
     rail.addEventListener("pointercancel", up);
     return () => {
       gsap.ticker.remove(onTick);
+      gsap.set(cards, { skewX: 0 });
+      rail.tabIndex = 0;
       rail.removeEventListener("pointerdown", down);
       rail.removeEventListener("pointermove", move);
       rail.removeEventListener("pointerup", up);
       rail.removeEventListener("pointercancel", up);
     };
   });
-  gsap.from(".fcard", { y: 80, opacity: 0, duration: 1.2, ease: "expo.out", stagger: 0.08, scrollTrigger: { trigger: ".formats", start: "top 60%", once: true } });
+  const lift = deskQuery.matches ? { y: 80 } : { scale: 0.94 };
+  gsap.from(".fcard", { ...lift, opacity: 0, duration: still ? 0 : 1.2, ease: "expo.out", stagger: 0.08, clearProps: "transform", scrollTrigger: { trigger: ".formats", start: "top 60%", once: true } });
 }
 
 /* ───────── Package: ticket ───────── */
@@ -306,18 +362,26 @@ function initPackage() {
   const target = Number(price.dataset.price);
   const fmt = new Intl.NumberFormat("id-ID");
   const counter = { v: 0 };
-  ScrollTrigger.create({
-    trigger: ticket,
-    start: "top 75%",
-    once: true,
-    onEnter: () => {
-      gsap.to(counter, { v: target, duration: still ? 0 : 2, ease: "expo.out", onUpdate: () => (price.textContent = fmt.format(Math.round(counter.v / 1000) * 1000)) });
-      gsap.fromTo(".stamp", { scale: 2.6, opacity: 0, rotate: 10 }, { scale: 1, opacity: 1, rotate: -14, duration: 0.7, delay: 0.9, ease: "back.out(2.4)" });
-      gsap.from(".ticket__list li", { x: -20, opacity: 0, stagger: 0.07, duration: 0.8, ease: "expo.out", delay: 0.2 });
-    },
-  });
-  gsap.from(ticket, { y: 120, rotate: -4, opacity: 0, duration: 1.4, ease: "expo.out", scrollTrigger: { trigger: ticket, start: "top 92%", once: true } });
-  if (still) return;
+  // Everything starts from one trigger on the untransformed wrapper, so the ticket never shows
+  // a placeholder state (price 0, empty list) and is not measured with its own entrance offset.
+  if (!still) {
+    price.textContent = "0";
+    gsap.set(ticket, { y: 120, rotate: -4, opacity: 0 });
+    gsap.set(".stamp", { opacity: 0 });
+    gsap.set(".ticket__list li", { opacity: 0, x: -20 });
+    ScrollTrigger.create({
+      trigger: ".ticket-wrap",
+      start: "top 88%",
+      once: true,
+      onEnter: () => {
+        gsap.to(ticket, { y: 0, rotate: 0, opacity: 1, duration: 1.3, ease: "expo.out" });
+        gsap.to(counter, { v: target, duration: 2, delay: 0.15, ease: "expo.out", onUpdate: () => (price.textContent = fmt.format(Math.round(counter.v / 1000) * 1000)) });
+        gsap.to(".ticket__list li", { x: 0, opacity: 1, stagger: 0.07, duration: 0.8, ease: "expo.out", delay: 0.25, clearProps: "transform" });
+        gsap.fromTo(".stamp", { scale: 1.6, opacity: 0, rotate: 10 }, { scale: 1, opacity: 1, rotate: -14, duration: 0.7, delay: 0.9, ease: "back.out(2.4)" });
+      },
+    });
+  }
+  if (still || !matchMedia(FINE).matches) return;
   const rx = gsap.quickTo(ticket, "rotationX", { duration: 0.8, ease: "power3" });
   const ry = gsap.quickTo(ticket, "rotationY", { duration: 0.8, ease: "power3" });
   gsap.set(ticket, { transformPerspective: 1400 });
@@ -337,14 +401,15 @@ function initProcess() {
   const path = $(".process__path path");
   path.setAttribute("pathLength", "1");
   gsap.to(path, { strokeDashoffset: 0, ease: "none", scrollTrigger: { trigger: ".process__steps", start: "top 80%", end: "bottom 60%", scrub: 0.6 } });
-  gsap.from(".step", { y: 60, opacity: 0, rotate: (i) => (i % 2 ? 3 : -3), duration: 1.1, ease: "expo.out", stagger: 0.12, scrollTrigger: { trigger: ".process__steps", start: "top 80%", once: true } });
+  if (still) return;
+  gsap.from(".step", { y: 60, opacity: 0, rotate: (i) => (i % 2 ? 3 : -3), duration: 1.1, ease: "expo.out", stagger: 0.12, clearProps: "transform", scrollTrigger: { trigger: ".process__steps", start: "top 80%", once: true } });
   gsap.from(".step__num", { scale: 0, duration: 0.8, ease: "back.out(2.4)", stagger: 0.12, scrollTrigger: { trigger: ".process__steps", start: "top 75%", once: true } });
 }
 
 /* ───────── Footer ───────── */
 function initFooter() {
-  gsap.from("[data-foot-line] > *, [data-foot-line]", { yPercent: 110, duration: 1.3, ease: "expo.out", stagger: 0.1, scrollTrigger: { trigger: ".footer__title", start: "top 85%", once: true } });
-  gsap.from(".footer__lede, .footer__ctas", { y: 30, opacity: 0, duration: 1, ease: "expo.out", stagger: 0.1, scrollTrigger: { trigger: ".footer__intro", start: "top 70%", once: true } });
+  if (!still) gsap.from("[data-foot-line] > *, [data-foot-line]", { yPercent: 110, duration: 1.3, ease: "expo.out", stagger: 0.1, scrollTrigger: { trigger: ".footer__title", start: "top 85%", once: true } });
+  if (!still) gsap.from(".footer__lede, .footer__ctas", { y: 30, opacity: 0, duration: 1, ease: "expo.out", stagger: 0.1, scrollTrigger: { trigger: ".footer__intro", start: "top 70%", once: true } });
 
   // Wordmark: every letter is its own sticker; hover recolours and bounces it.
   const mark = $("[data-wordmark]");
@@ -360,7 +425,7 @@ function initFooter() {
   fit();
   document.fonts?.ready.then(fit);
   window.addEventListener("resize", fit);
-  gsap.from(chars, { yPercent: 100, opacity: 0, rotate: () => gsap.utils.random(-20, 20), duration: 1.2, ease: "expo.out", stagger: 0.035, scrollTrigger: { trigger: mark, start: "top 95%", once: true } });
+  if (!still) gsap.from(chars, { yPercent: 100, opacity: 0, rotate: () => gsap.utils.random(-20, 20), duration: 1.2, ease: "expo.out", stagger: 0.035, scrollTrigger: { trigger: mark, start: "top 95%", once: true } });
   chars.forEach((ch, i) => {
     ch.addEventListener("pointerenter", () => {
       ch.style.color = colours[(i + Math.floor(Math.random() * colours.length)) % colours.length];

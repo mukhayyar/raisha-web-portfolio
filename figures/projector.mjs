@@ -290,6 +290,9 @@ function slideBox() {
   return out.join("");
 }
 
+// The hint corner speaks to the input in hand: CSS shows one span or the other.
+const touchHint = (html, mouse, touch) => html.replace(`>${mouse}<`, `><span class="only-mouse">${mouse}</span><span class="only-touch">${touch}</span><`);
+
 export function projectorHtml() {
   const beam = beamPath();
   const items = Array.from({ length: SLOTS }, (_, i) => {
@@ -316,11 +319,11 @@ export function projectorHtml() {
       slideBox(),
     ],
   });
-  return k.plateHtml({
+  return touchHint(k.plateHtml({
     fig: "Fig 2",
     title: "Carousel projector",
     hint: "Click to advance the month",
     readout: "slot 01 of 15 · reel · 19:00",
     body: `<div class="iso-stage pj-stage" tabindex="0" role="group" aria-label="Carousel projector. Click, Space or the arrow keys advance the tray one post.">${svg}</div>`,
-  });
+  }), "Click to advance the month", "Tap to advance the month");
 }
