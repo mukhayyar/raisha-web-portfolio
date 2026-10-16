@@ -1,0 +1,138 @@
+@import "../../figures/kit/iso.css";
+
+/* Riso plates: each figure is printed in one ink on tinted paper, with the
+   palette as the only colour, because the palette is the subject. */
+.iso[data-theme="light"].plate-ink {
+  --anatomy-card: var(--plate-paper);
+  --anatomy-paper: var(--plate-paper);
+  --anatomy-face: var(--plate-face);
+  --anatomy-top: var(--plate-face);
+  --anatomy-lit-top: var(--plate-face);
+  --anatomy-shade-0: var(--plate-s0);
+  --anatomy-shade-1: var(--plate-s1);
+  --anatomy-shade-2: var(--plate-s2);
+  --anatomy-shade-3: var(--plate-s3);
+  --anatomy-lit-shade: var(--plate-s2);
+  --anatomy-hi: var(--plate-hi);
+  --anatomy-mid: var(--plate-mid);
+  --anatomy-lo: var(--plate-lo);
+  --anatomy-faint: var(--plate-faint);
+  --anatomy-lit: var(--plate-lit);
+  --anatomy-dot: var(--plate-hi);
+  --anatomy-halo: var(--plate-halo);
+  --anatomy-halo-opacity: .3;
+  --anatomy-text: var(--plate-hi);
+  --anatomy-muted: var(--plate-mid);
+  --anatomy-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  --pen-0: #ff4fa3;
+  --pen-1: #ff7a2f;
+  --pen-2: #b9e83a;
+  --pen-3: #3a4dff;
+}
+.plate-cobalt {
+  --plate-paper: #fff8ec;
+  --plate-face: #fffdf8;
+  --plate-s0: #ecdfca;
+  --plate-s1: #f2e8d7;
+  --plate-s2: #f7f0e3;
+  --plate-s3: #fbf6ec;
+  --plate-hi: #1d2063;
+  --plate-mid: #6c6ea3;
+  --plate-lo: #a9a9cb;
+  --plate-faint: #d9d6e6;
+  --plate-lit: #ff2e8a;
+  --plate-halo: #5b4a7a;
+}
+
+.iso-plate { box-shadow: 0 0 0 1px var(--anatomy-hi); }
+
+/* Fig 1: feed plotter */
+.fp-stage { outline: none; touch-action: pan-y; cursor: crosshair; }
+.fp-stage:focus-visible { outline: 1px solid var(--anatomy-muted); outline-offset: 6px; }
+.fp-tile-ink { fill: var(--c); opacity: 0; mix-blend-mode: multiply; }
+.fp-tile-ring { fill: none; stroke: var(--anatomy-hi); stroke-width: var(--anatomy-weight); vector-effect: non-scaling-stroke; stroke-linejoin: round; }
+.fp-motif { fill: none; stroke: var(--anatomy-hi); stroke-width: 1.1; stroke-linecap: round; stroke-linejoin: round; vector-effect: non-scaling-stroke; }
+.fp-tile-ink { opacity: .92; }
+.fp-ink { opacity: .92; }
+.fp-cap-ink { fill: var(--c); opacity: .85; mix-blend-mode: multiply; }
+.fp-screen { fill: var(--anatomy-hi); }
+.fp-screen-text { fill: var(--plate-paper); font-family: var(--anatomy-mono); font-weight: 600; letter-spacing: .02em; }
+.fp-screen-bar { fill: var(--anatomy-lit); }
+.iso-dots circle[data-part="led"] { fill: var(--anatomy-lit); opacity: 1; }
+
+/* Fig 2: carousel projector */
+.plate-plum {
+  --plate-paper: #fff4f7;
+  --plate-face: #fffbfc;
+  --plate-s0: #f0dbe2;
+  --plate-s1: #f5e4ea;
+  --plate-s2: #f9edf1;
+  --plate-s3: #fcf5f7;
+  --plate-hi: #4a1238;
+  --plate-mid: #9a6487;
+  --plate-lo: #cfa9c0;
+  --plate-faint: #ead7e1;
+  --plate-lit: #1f5cff;
+  --plate-halo: #7a3a62;
+}
+.pj-stage { outline: none; touch-action: pan-y; cursor: pointer; }
+.pj-stage:focus-visible { outline: 1px solid var(--anatomy-muted); outline-offset: 6px; }
+.pj-film { fill: var(--c); opacity: .9; mix-blend-mode: multiply; stroke: var(--anatomy-hi); stroke-width: var(--anatomy-weight); vector-effect: non-scaling-stroke; }
+.pj-screen-border { fill: none; stroke: var(--anatomy-faint); stroke-width: var(--anatomy-weight); vector-effect: non-scaling-stroke; }
+.pj-image { transition: opacity .28s ease; }
+.pj-image.is-off { opacity: 0; }
+.pj-image-fill { fill: var(--c, var(--pen-0)); opacity: .9; mix-blend-mode: multiply; }
+.pj-image-motif { fill: none; stroke: var(--anatomy-hi); stroke-width: 1.2; stroke-linejoin: round; stroke-linecap: round; vector-effect: non-scaling-stroke; }
+.pj-image-rule { fill: none; stroke: var(--anatomy-hi); stroke-width: 1.4; stroke-linecap: round; vector-effect: non-scaling-stroke; opacity: .7; }
+.pj-image-text { fill: var(--anatomy-hi); font-family: var(--anatomy-mono); font-weight: 600; }
+.pj-image-edge { fill: none; stroke: var(--anatomy-mid); stroke-width: var(--anatomy-weight); vector-effect: non-scaling-stroke; }
+.pj-beam { mix-blend-mode: multiply; pointer-events: none; transition: fill .4s; }
+[data-figure="projector"] { --beam: var(--pen-0); }
+.pj-badge { fill: var(--anatomy-hi); }
+.pj-stage .iso-face-text[data-tone="hi"] { fill: var(--plate-paper); font-weight: 600; letter-spacing: .12em; }
+.pj-lcd { fill: var(--anatomy-hi); }
+.pj-lcd-text { fill: var(--plate-paper); font-family: var(--anatomy-mono); font-weight: 600; }
+.pj-tab { fill: var(--c); opacity: .9; mix-blend-mode: multiply; pointer-events: none; }
+
+/* Fig 3: card catalog */
+.plate-forest {
+  --plate-paper: #f6fbef;
+  --plate-face: #fcfef9;
+  --plate-s0: #dde8d2;
+  --plate-s1: #e6efdc;
+  --plate-s2: #eef5e7;
+  --plate-s3: #f5f9f0;
+  --plate-hi: #0f3b2c;
+  --plate-mid: #5f8573;
+  --plate-lo: #a7c0b2;
+  --plate-faint: #d4e2d8;
+  --plate-lit: #ff2e8a;
+  --plate-halo: #34604c;
+}
+.ct-stage { outline: none; touch-action: pan-y; }
+.ct-stage:focus-visible { outline: 1px solid var(--anatomy-muted); outline-offset: 6px; }
+.ct-drawer { cursor: pointer; }
+[data-part="dome"], [data-part="plunger"] { cursor: pointer; }
+.ct-cavity { fill: var(--anatomy-hi); opacity: 0; }
+.ct-tab-ink { fill: var(--c); opacity: .92; mix-blend-mode: multiply; pointer-events: none; }
+.ct-holder { fill: var(--plate-paper); }
+.ct-ink { fill: var(--pen-0); opacity: .85; mix-blend-mode: multiply; }
+.ct-done { fill: var(--anatomy-lit); font-weight: 600; letter-spacing: .1em; }
+.ct-stage .iso-face-text { font-weight: 600; }
+
+/* ───────── Dark plates: the same riso prints, inverted onto dark stock ───────── */
+:root[data-theme="dark"] .plate-cobalt {
+  --plate-paper: #161830; --plate-face: #1d2040; --plate-s0: #0f1126; --plate-s1: #13152d; --plate-s2: #171a35; --plate-s3: #1b1e3c;
+  --plate-hi: #e9e8ff; --plate-mid: #9295cc; --plate-lo: #565a92; --plate-faint: #2f3264; --plate-lit: #ff6fb6; --plate-halo: #000;
+}
+:root[data-theme="dark"] .plate-plum {
+  --plate-paper: #241020; --plate-face: #2f1529; --plate-s0: #1a0b17; --plate-s1: #200e1c; --plate-s2: #271222; --plate-s3: #2d1627;
+  --plate-hi: #ffe4f2; --plate-mid: #c690b3; --plate-lo: #7d4c6c; --plate-faint: #4a2a40; --plate-lit: #7c9bff; --plate-halo: #000;
+}
+:root[data-theme="dark"] .plate-forest {
+  --plate-paper: #0f2019; --plate-face: #152a21; --plate-s0: #0a1712; --plate-s1: #0d1b15; --plate-s2: #11211a; --plate-s3: #15271f;
+  --plate-hi: #e4f7ec; --plate-mid: #89b8a0; --plate-lo: #4e7766; --plate-faint: #263d32; --plate-lit: #ff6fb6; --plate-halo: #000;
+}
+:root[data-theme="dark"] .iso[data-theme="light"].plate-ink { --anatomy-halo-opacity: .55; }
+:root[data-theme="dark"] :is(.fp-tile-ink, .fp-cap-ink, .pj-film, .pj-image-fill, .pj-beam, .pj-tab, .ct-tab-ink, .ct-ink) { mix-blend-mode: normal; }
+:root[data-theme="dark"] .pj-beam { mix-blend-mode: screen; }

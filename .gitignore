@@ -1,0 +1,5 @@
+node_modules
+dist
+figures/out
+.DS_Store
+.run

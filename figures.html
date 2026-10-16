@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Figures · dev</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>body{margin:0;background:#efe7d8;font:14px/1.5 system-ui}.wrap{width:min(760px,100% - 32px);margin:48px auto;display:grid;gap:48px}</style>
+</head>
+<body>
+<main class="wrap">
+  <div class="iso plate-ink plate-cobalt" data-theme="light" id="fig-plotter"><!--figure:plotter--></div>
+  <div class="iso plate-ink plate-plum" data-theme="light" id="fig-projector" data-figure="projector"><!--figure:projector--></div>
+  <div class="iso plate-ink plate-forest" data-theme="light" id="fig-catalog"><!--figure:catalog--></div>
+</main>
+<script type="module">
+import "./src/styles/figures.css";
+import { mountPlotter } from "./src/js/figures/plotter-live.js";
+import { mountProjector } from "./src/js/figures/projector-live.js";
+mountProjector(document.getElementById("fig-projector"));
+import { mountCatalog } from "./src/js/figures/catalog-live.js";
+mountCatalog(document.getElementById("fig-catalog"));
+mountPlotter(document.getElementById("fig-plotter"));
+</script>
+</body>
+</html>
