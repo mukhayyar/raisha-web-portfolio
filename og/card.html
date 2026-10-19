@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Share card</title>
+<!-- Source for public/og-card.png (1200×630). Render with: npm run og
+     Everything that must be read sits in the centre 630×630 square, because WhatsApp
+     and some apps crop small previews to a square; the flanks are decoration only. -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,200..800&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --ink: #16131c; --paper: #f5efe3; --pink: #ff4fa3; --tangerine: #ff7a2f; --lime: #c6f03c;
+    --cobalt: #3a4dff; --lilac: #c9b8ff; --butter: #ffe46b;
+  }
+  * { box-sizing: border-box; margin: 0; }
+  html, body { width: 1200px; height: 630px; overflow: hidden; }
+  body { background: var(--paper); color: var(--ink); font-family: "Bricolage Grotesque", sans-serif; position: relative; }
+
+  .frame { position: absolute; inset: 16px; border: 3px solid var(--ink); border-radius: 30px; }
+
+  /* ── centre square (x 285–915): the part that survives a square crop ── */
+  .centre { position: absolute; left: 285px; top: 0; width: 630px; height: 630px; display: grid; justify-items: center; align-content: center; gap: 0; text-align: center; }
+  .brand { display: inline-flex; align-items: center; gap: 12px; font-weight: 700; font-size: 25px; letter-spacing: -0.02em; margin-bottom: 26px; }
+  .brand b { color: var(--pink); }
+  .mark { display: grid; grid-template-columns: repeat(2, 13px); gap: 3px; }
+  .mark i { width: 13px; height: 13px; border-radius: 3.5px; background: var(--ink); }
+  .mark i:nth-child(1) { background: var(--pink); }
+  .mark i:nth-child(4) { background: var(--cobalt); }
+
+  .title { font-weight: 800; font-size: 156px; line-height: 0.8; letter-spacing: -0.038em; font-variation-settings: "wdth" 90; }
+  .title > span { display: block; }
+  .title .two { display: flex; align-items: flex-end; justify-content: center; gap: 0.1em; margin-top: 0.06em; }
+  .title em { font-family: "Instrument Serif", serif; font-style: italic; font-weight: 400; font-size: 0.46em; letter-spacing: -0.01em; line-height: 1; margin-bottom: 0.14em; }
+  .title .dot { color: var(--pink); }
+
+  .services { margin-top: 34px; font-family: "JetBrains Mono", monospace; font-weight: 600; font-size: 17px; letter-spacing: 0.08em; text-transform: uppercase; }
+  .services b { color: var(--pink); margin: 0 0.5em; }
+  .where { margin-top: 22px; display: inline-flex; align-items: center; gap: 12px; padding: 12px 22px; border-radius: 999px; background: var(--ink); color: var(--paper); font-size: 20px; font-weight: 600; letter-spacing: -0.01em; }
+  .where i { width: 11px; height: 11px; border-radius: 50%; background: var(--lime); box-shadow: 0 0 0 3px rgba(198, 240, 60, 0.25); }
+
+  /* ── flanks: decoration that may be cropped ── */
+  .sticker { position: absolute; filter: drop-shadow(5px 6px 0 var(--ink)); }
+  .grid { left: 70px; top: 300px; width: 186px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 7px; transform: rotate(-8deg); }
+  .grid i { aspect-ratio: 1; border-radius: 6px; border: 2.5px solid var(--ink); background: var(--c); }
+  .flower { left: 92px; top: 88px; width: 132px; transform: rotate(-10deg); }
+  .badge { right: 74px; top: 70px; width: 170px; }
+  .burst { right: 100px; bottom: 82px; width: 150px; transform: rotate(8deg); }
+  .pill { right: 56px; top: 292px; padding: 12px 20px; border-radius: 999px; background: var(--pink); border: 3px solid var(--ink); font-weight: 700; font-size: 21px; transform: rotate(-7deg); white-space: nowrap; }
+  .tape { position: absolute; left: -40px; bottom: 50px; width: 290px; white-space: nowrap; padding: 9px 0; background: var(--lime); border-block: 3px solid var(--ink); transform: rotate(-9deg); font-weight: 800; font-size: 20px; letter-spacing: -0.01em; text-align: center; }
+</style>
+</head>
+<body>
+  <div class="frame"></div>
+
+  <!-- left flank -->
+  <div class="sticker flower">
+    <svg viewBox="0 0 200 200"><g fill="#c9b8ff" stroke="#16131c" stroke-width="4"><circle cx="100" cy="46" r="40"/><circle cx="154" cy="100" r="40"/><circle cx="100" cy="154" r="40"/><circle cx="46" cy="100" r="40"/><circle cx="138" cy="62" r="40"/><circle cx="138" cy="138" r="40"/><circle cx="62" cy="138" r="40"/><circle cx="62" cy="62" r="40"/></g><circle cx="100" cy="100" r="44" fill="#ff7a2f" stroke="#16131c" stroke-width="4"/><text x="100" y="114" text-anchor="middle" font-family="Instrument Serif, serif" font-style="italic" font-size="44" fill="#16131c">hi!</text></svg>
+  </div>
+  <div class="sticker grid">
+    <i style="--c:var(--pink)"></i><i style="--c:var(--cobalt)"></i><i style="--c:var(--tangerine)"></i>
+    <i style="--c:var(--lime)"></i><i style="--c:var(--butter)"></i><i style="--c:var(--pink)"></i>
+    <i style="--c:var(--lilac)"></i><i style="--c:var(--cobalt)"></i><i style="--c:var(--tangerine)"></i>
+  </div>
+  <div class="tape">✳ Reels ✳ Carousels ✳</div>
+
+  <!-- centre: survives a square crop -->
+  <main class="centre">
+    <div class="brand"><span class="mark"><i></i><i></i><i></i><i></i></span><span>curatedby<b>.rai</b></span></div>
+    <h1 class="title"><span>Curated</span><span class="two"><em>by</em><span>Rai<span class="dot">.</span></span></span></h1>
+    <p class="services">Creative media<b>✳</b>Socials<b>✳</b>Virtual assistant</p>
+    <p class="where"><i></i>Remote from Surabaya · WFH-friendly</p>
+  </main>
+
+  <!-- right flank -->
+  <div class="sticker badge">
+    <svg viewBox="0 0 200 200">
+      <defs><path id="c" d="M100 100 m-74 0 a74 74 0 1 1 148 0 a74 74 0 1 1 -148 0" /></defs>
+      <circle cx="100" cy="100" r="96" fill="#ffe46b" stroke="#16131c" stroke-width="4" />
+      <text font-size="13.4" font-family="JetBrains Mono, monospace" font-weight="600" fill="#16131c"><textPath href="#c" textLength="462" lengthAdjust="spacing">CREATIVE MEDIA ✳ SOCIAL MEDIA ✳ VIRTUAL ASSISTANT ✳ </textPath></text>
+      <path d="M100 66 L106 92 L132 86 L110 100 L132 114 L106 108 L100 134 L94 108 L68 114 L90 100 L68 86 L94 92 Z" fill="#ff4fa3" stroke="#16131c" stroke-width="4" stroke-linejoin="round" />
+    </svg>
+  </div>
+  <div class="sticker pill">10 videos / month</div>
+  <div class="sticker burst">
+    <svg viewBox="0 0 200 200"><path d="M100 4 L117 38 L152 20 L150 59 L190 64 L163 92 L196 116 L158 128 L170 166 L132 160 L120 197 L100 166 L80 197 L68 160 L30 166 L42 128 L4 116 L37 92 L10 64 L50 59 L48 20 L83 38 Z" fill="#c6f03c" stroke="#16131c" stroke-width="4.5" stroke-linejoin="round"/><text x="100" y="96" text-anchor="middle" font-family="Bricolage Grotesque, sans-serif" font-weight="800" font-size="34" fill="#16131c">WFH</text><text x="100" y="128" text-anchor="middle" font-family="Instrument Serif, serif" font-style="italic" font-size="30" fill="#16131c">friendly</text></svg>
+  </div>
+</body>
+</html>
