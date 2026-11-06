@@ -10,6 +10,8 @@ const FIGURES = {
   plotter: ["figures/plotter.mjs", "plotterHtml"],
   projector: ["figures/projector.mjs", "projectorHtml"],
   catalog: ["figures/catalog.mjs", "catalogHtml"],
+  // Not a figure, but the same trick: the Selected work grid is rendered from src/work/data.js.
+  work: ["src/work/render.js", "workHtml"],
 };
 
 function anatomyFigures() {
@@ -26,7 +28,7 @@ function anatomyFigures() {
       return out;
     },
     handleHotUpdate({ file, server }) {
-      if (file.includes("/figures/")) server.ws.send({ type: "full-reload" });
+      if (file.includes("/figures/") || file.includes("/src/work/")) server.ws.send({ type: "full-reload" });
     },
   };
 }

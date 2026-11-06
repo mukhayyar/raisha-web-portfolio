@@ -8,6 +8,7 @@ import Lenis from "lenis";
 import { initCursor, initMagnetic } from "./js/cursor.js";
 import { runLoader } from "./js/loader.js";
 import { initCurate } from "./js/curate.js";
+import { initWork } from "./js/work.js";
 import { mountFigures } from "./js/figures/index.js";
 
 gsap.registerPlugin(ScrollTrigger, SplitText, Draggable, InertiaPlugin);
@@ -490,6 +491,7 @@ initTapes();
 initReveals();
 initServices();
 initFormats();
+initWork({ lenis, still });
 initPackage();
 initProcess();
 initFooter();

@@ -36,6 +36,20 @@ same modules and only moves the parts that move.
   right below them. Plate inks for each figure are in `src/styles/figures.css`.
 - The footer mini-game ("Curate this feed") is `src/js/curate.js`.
 
+## Adding portfolio work
+
+The **Selected work** grid is built from `src/work/data.js` (one line per tile) and rendered into
+`index.html` at build time. Media lives in `public/work/`.
+
+1. Make web-sized files from the original (needs `ffmpeg`):
+   ```sh
+   scripts/work-media.sh video "IMG_1234.MOV" wedding-1234 2   # 2 = poster frame at 2 s
+   scripts/work-media.sh cover "Reel Cover.png" brand-cover-1
+   scripts/work-media.sh slide "Slide 1.png" brand-slide-1
+   ```
+2. Add an entry to `WORK` in `src/work/data.js` (type, category, file, title, client, duration).
+   The first 10 tiles show by default; the rest open with **Show all** or a filter.
+
 ## Deploy to GitHub Pages
 
 The workflow in `.github/workflows/deploy.yml` builds and deploys on every push to `main`.
