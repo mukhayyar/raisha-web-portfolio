@@ -24,6 +24,7 @@ export function initWork({ lenis, still }) {
     if (id === current) return;
     current = id;
     const state = still ? null : Flip.getState(tiles);
+    const from = grid.offsetHeight;
     filters.forEach((b) => {
       const on = b.dataset.filter === id;
       b.classList.toggle("is-on", on);
@@ -33,6 +34,13 @@ export function initWork({ lenis, still }) {
     tiles.forEach((t) => (t.hidden = id !== "all" && t.dataset.cat !== id));
     stopPreviews();
     if (state) {
+      // Flip's absolute mode takes every tile out of flow, which would collapse the grid and pull the
+      // next section up over the cards mid-animation. Hold the grid at the taller of its old and new
+      // heights while the cards move, then settle it to the new height once they have landed.
+      const to = grid.offsetHeight;
+      gsap.killTweensOf(grid);
+      gsap.set(grid, { height: Math.max(from, to) });
+      Flip.killFlipsOf?.(tiles);
       Flip.from(state, {
         duration: 0.6,
         ease: "expo.out",
@@ -40,7 +48,12 @@ export function initWork({ lenis, still }) {
         stagger: 0.02,
         onEnter: (els) => gsap.fromTo(els, { opacity: 0, scale: 0.85 }, { opacity: 1, scale: 1, duration: 0.5, ease: "expo.out", stagger: 0.03 }),
         onLeave: (els) => gsap.to(els, { opacity: 0, scale: 0.85, duration: 0.3 }),
-        onComplete: () => ScrollTrigger.refresh(),
+        onComplete: () => {
+          if (grid.offsetHeight === to) {
+            gsap.set(grid, { clearProps: "height" });
+            ScrollTrigger.refresh();
+          } else gsap.to(grid, { height: to, duration: 0.5, ease: "expo.inOut", clearProps: "height", onComplete: () => ScrollTrigger.refresh() });
+        },
       });
     } else ScrollTrigger.refresh();
   }
